@@ -3,32 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Love Journey 💖</title>
+<title>Our Love Story 💌</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 
 body{
     background:#000;
     color:white;
-    overflow:hidden;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    overflow:hidden;
+}
+
+/* Floating hearts */
+.heart{
+    position:fixed;
+    bottom:-20px;
+    font-size:18px;
+    animation:floatUp linear infinite;
+    opacity:0.6;
+}
+@keyframes floatUp{
+    from{transform:translateY(0);}
+    to{transform:translateY(-110vh);}
+}
+
+/* Fade animation */
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(20px);}
+    to{opacity:1;transform:translateY(0);}
 }
 
 .container{
     width:90%;
-    max-width:500px;
+    max-width:520px;
     text-align:center;
+    animation:fadeIn 0.6s ease;
 }
 
 .hidden{display:none;}
@@ -43,41 +58,27 @@ input{
 }
 
 button{
-    margin-top:20px;
-    padding:12px 25px;
+    margin:8px 5px;
+    padding:12px 20px;
     border:none;
     border-radius:30px;
     background:linear-gradient(45deg,#ff007f,#ff4da6);
     color:white;
-    font-size:16px;
+    font-size:14px;
     cursor:pointer;
     transition:0.3s;
 }
-
 button:hover{transform:scale(1.05);}
 
-#gameArea{
-    position:relative;
-    width:100%;
-    height:60vh;
-    overflow:hidden;
-}
-
-.heart{
-    position:absolute;
-    font-size:28px;
-    cursor:pointer;
-    animation:floatUp linear forwards;
-}
-
-@keyframes floatUp{
-    from{transform:translateY(0);}
-    to{transform:translateY(-120vh);}
-}
-
-.counter{
+.score{
     margin-top:10px;
-    font-size:18px;
+    font-size:14px;
+    opacity:0.8;
+}
+
+.characters{
+    font-size:40px;
+    margin:10px 0;
 }
 
 .contract{
@@ -85,6 +86,20 @@ button:hover{transform:scale(1.05);}
     padding:20px;
     border-radius:15px;
     border:1px solid #ff4da6;
+    position:relative;
+}
+
+/* Fireworks */
+.firework{
+    position:fixed;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    animation:explode 1s ease-out forwards;
+}
+@keyframes explode{
+    from{transform:scale(1);}
+    to{transform:scale(15);opacity:0;}
 }
 </style>
 </head>
@@ -92,103 +107,173 @@ button:hover{transform:scale(1.05);}
 <body>
 
 <div class="container" id="screen1">
-    <h2>Welcome Beautiful ❤️</h2>
-    <p>Enter your name to begin our Love Journey</p>
+    <h2>Hi Beautiful ❤️</h2>
+    <p>Enter your name to begin our story</p>
     <input type="text" id="herName" placeholder="Your Name">
-    <button onclick="startGame()">Start Journey</button>
+    <button onclick="start()">Begin 💌</button>
 </div>
 
-<div class="container hidden" id="screen2">
-    <h2>Level 1: Collect the Love 💕</h2>
-    <p>Tap 10 hearts to unlock the next level</p>
-    <div id="gameArea"></div>
-    <div class="counter">Hearts Collected: <span id="score">0</span>/10</div>
+<div class="container hidden" id="quizScreen">
+    <div class="characters">👦 ❤️ 👧</div>
+    <h3 id="qTitle"></h3>
+    <p id="qText"></p>
+    <div id="options"></div>
+    <div class="score">Love Score: <span id="score">0</span></div>
 </div>
 
-<div class="container hidden" id="screen3">
-    <h2 id="storyTitle"></h2>
-    <p id="storyText"></p>
-    <button onclick="finalQuestion()">Continue 💖</button>
-</div>
-
-<div class="container hidden" id="screen4">
+<div class="container hidden" id="proposalScreen">
     <h2>The Big Question 💍</h2>
-    <p id="question"></p>
+    <p id="finalText"></p>
     <button id="yesBtn" onclick="showContract()">Yes 💖</button>
     <button id="noBtn" onclick="handleNo()">No 🙈</button>
 </div>
 
-<div class="container hidden" id="screen5">
+<div class="container hidden" id="lowScoreScreen">
+    <h2>Hmmmm 😏</h2>
+    <p>Your love compatibility score is too low.</p>
+    <p>Maybe replay and choose more romantic answers ❤️</p>
+    <button onclick="location.reload()">Try Again</button>
+</div>
+
+<div class="container hidden" id="contractScreen">
     <div class="contract">
-        <h2>Official Love Contract ❤️</h2>
+        <h2>Official Love Contract 🎆</h2>
         <p>This confirms that</p>
         <h3 id="cName"></h3>
-        <p>has agreed to be</p>
-        <h3>Valentine & Forever Person</h3>
-        <p>of</p>
+        <p>has chosen</p>
         <h3>Ritesh</h3>
-        <p>From today & always 💍</p>
+        <p>as her Valentine & Forever Person 💕</p>
     </div>
 </div>
 
 <script>
 let nameVal="";
 let score=0;
+let current=0;
 let noCount=0;
 
-function startGame(){
+const questions=[
+{q:"Where should our dream date be? 🌅",
+ options:[
+ {text:"Beach sunset holding hands 🌊",points:2},
+ {text:"Late night drive with music 🚗",points:1},
+ {text:"Scrolling Instagram separately 📱",points:0}]},
+
+{q:"Who fell first? 😌",
+ options:[
+ {text:"You did 😉",points:1},
+ {text:"I did 🙈",points:2},
+ {text:"We both slowly ❤️",points:2}]},
+
+{q:"After a fight, what happens? 😅",
+ options:[
+ {text:"Silent treatment forever 😤",points:0},
+ {text:"One of us melts first 😇",points:2},
+ {text:"We talk it out like adults 💬",points:2}]},
+
+{q:"What describes us best? 💞",
+ options:[
+ {text:"Chaos but cute 😂",points:1},
+ {text:"Calm & strong 💕",points:2},
+ {text:"Toxic Netflix series 🎬",points:0}]},
+
+{q:"Who is more dramatic? 🎭",
+ options:[
+ {text:"You 😏",points:1},
+ {text:"Me 😅",points:1},
+ {text:"Both equally 😂",points:2}]},
+
+{q:"If I’m sad, you would…",
+ options:[
+ {text:"Ignore me 😒",points:0},
+ {text:"Hug me tight 🤗",points:2},
+ {text:"Make me laugh 😂",points:2}]},
+
+{q:"If we travel together, we choose… ✈️",
+ options:[
+ {text:"Romantic hill station 🌄",points:2},
+ {text:"Adventure trip 🏕️",points:1},
+ {text:"Stay home and sleep 😴",points:0}]},
+
+{q:"What matters most in us? ❤️",
+ options:[
+ {text:"Trust 🤝",points:2},
+ {text:"Looks 😌",points:0},
+ {text:"Effort 💪",points:2}]},
+
+{q:"If I say I love you…",
+ options:[
+ {text:"Say it louder 😌",points:1},
+ {text:"Smile quietly ❤️",points:2},
+ {text:"Reply after 2 hours 😒",points:0}]},
+
+{q:"Are we meant to be? 💍",
+ options:[
+ {text:"Obviously yes 😌",points:2},
+ {text:"Maybe destiny 🤞",points:1},
+ {text:"Let’s see… 👀",points:0}]}
+];
+
+function floatingHearts(){
+    setInterval(()=>{
+        const h=document.createElement("div");
+        h.className="heart";
+        h.innerHTML="❤️";
+        h.style.left=Math.random()*100+"vw";
+        h.style.animationDuration=(3+Math.random()*4)+"s";
+        document.body.appendChild(h);
+        setTimeout(()=>h.remove(),7000);
+    },400);
+}
+floatingHearts();
+
+function start(){
     nameVal=document.getElementById("herName").value.trim();
     if(nameVal===""){alert("Enter your name 😌");return;}
 
     document.getElementById("screen1").classList.add("hidden");
-    document.getElementById("screen2").classList.remove("hidden");
-
-    spawnHearts();
+    document.getElementById("quizScreen").classList.remove("hidden");
+    loadQuestion();
 }
 
-function spawnHearts(){
-    const area=document.getElementById("gameArea");
+function loadQuestion(){
+    document.getElementById("qTitle").innerText="Question "+(current+1)+" / 10";
+    document.getElementById("qText").innerText=questions[current].q;
 
-    const interval=setInterval(()=>{
-        const heart=document.createElement("div");
-        heart.classList.add("heart");
-        heart.innerHTML="❤️";
-        heart.style.left=Math.random()*90+"%";
-        heart.style.bottom="0px";
-        heart.style.animationDuration=(3+Math.random()*2)+"s";
+    const optionsDiv=document.getElementById("options");
+    optionsDiv.innerHTML="";
 
-        heart.onclick=function(){
-            score++;
+    questions[current].options.forEach(option=>{
+        const btn=document.createElement("button");
+        btn.innerText=option.text;
+        btn.onclick=()=>{
+            score+=option.points;
             document.getElementById("score").innerText=score;
-            heart.remove();
-
-            if(score>=10){
-                clearInterval(interval);
-                setTimeout(()=>nextLevel(),500);
-            }
+            next();
         };
-
-        area.appendChild(heart);
-
-        setTimeout(()=>heart.remove(),5000);
-    },700);
+        optionsDiv.appendChild(btn);
+    });
 }
 
-function nextLevel(){
-    document.getElementById("screen2").classList.add("hidden");
-    document.getElementById("screen3").classList.remove("hidden");
-
-    document.getElementById("storyTitle").innerText="Level 2: A Little Confession 💭";
-    document.getElementById("storyText").innerText=
-    nameVal+", every heart you tapped represents how much you matter to me. Being with you feels calm, exciting, safe and magical.";
+function next(){
+    current++;
+    if(current<questions.length){
+        loadQuestion();
+    } else {
+        finishQuiz();
+    }
 }
 
-function finalQuestion(){
-    document.getElementById("screen3").classList.add("hidden");
-    document.getElementById("screen4").classList.remove("hidden");
+function finishQuiz(){
+    document.getElementById("quizScreen").classList.add("hidden");
 
-    document.getElementById("question").innerText=
-    nameVal+", will you be my Valentine and forever person?";
+    if(score>=12){
+        document.getElementById("proposalScreen").classList.remove("hidden");
+        document.getElementById("finalText").innerText=
+        nameVal+", your answers tell me something beautiful… will you be my Valentine?";
+    } else {
+        document.getElementById("lowScoreScreen").classList.remove("hidden");
+    }
 }
 
 function handleNo(){
@@ -196,15 +281,9 @@ function handleNo(){
     const noBtn=document.getElementById("noBtn");
     const yesBtn=document.getElementById("yesBtn");
 
-    const texts=[
-        "Are you sure? 😏",
-        "Think again 😌",
-        "System error ❌",
-        "That seems illegal 🚨",
-        "Okay fine YES 💖"
-    ];
+    const texts=["Are you sure? 😏","Think again 😌","Illegal choice 🚨","System error ❌","Okay fine YES 💖"];
 
-    if(noCount < texts.length){
+    if(noCount<texts.length){
         noBtn.innerText=texts[noCount];
         noBtn.style.transform="scale("+(1-noCount*0.1)+")";
         yesBtn.style.transform="scale("+(1+noCount*0.1)+")";
@@ -214,9 +293,22 @@ function handleNo(){
 }
 
 function showContract(){
-    document.getElementById("screen4").classList.add("hidden");
-    document.getElementById("screen5").classList.remove("hidden");
+    document.getElementById("proposalScreen").classList.add("hidden");
+    document.getElementById("contractScreen").classList.remove("hidden");
     document.getElementById("cName").innerText=nameVal;
+    fireworks();
+}
+
+function fireworks(){
+    for(let i=0;i<25;i++){
+        const f=document.createElement("div");
+        f.className="firework";
+        f.style.left=Math.random()*100+"vw";
+        f.style.top=Math.random()*100+"vh";
+        f.style.background=`hsl(${Math.random()*360},100%,50%)`;
+        document.body.appendChild(f);
+        setTimeout(()=>f.remove(),1000);
+    }
 }
 </script>
 
