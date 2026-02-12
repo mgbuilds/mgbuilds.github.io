@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Valentine’s Day ❤️</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:black;
+    color:white;
+    overflow:hidden;
+}
+
+/* Floating hearts background */
+.heart{
+    position:fixed;
+    font-size:18px;
+    opacity:0.4;
+    animation:float 8s linear infinite;
+}
+
+@keyframes float{
+    0%{transform:translateY(100vh);opacity:0}
+    20%{opacity:.5}
+    100%{transform:translateY(-10vh);opacity:0}
+}
+
+.container{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    width:90%;
+    max-width:700px;
+    animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;transform:translate(-50%,-45%)}
+    to{opacity:1;transform:translate(-50%,-50%)}
+}
+
+h1{
+    font-size:2.2rem;
+    margin-bottom:20px;
+    background:linear-gradient(45deg,#ff4d6d,#ff758f,#ffb3c6);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+p{
+    font-size:1.2rem;
+    margin-bottom:25px;
+    line-height:1.6;
+}
+
+input{
+    padding:12px;
+    width:80%;
+    max-width:300px;
+    border:none;
+    border-radius:25px;
+    text-align:center;
+    font-size:1rem;
+}
+
+button{
+    padding:12px 30px;
+    border:none;
+    border-radius:30px;
+    font-size:1rem;
+    cursor:pointer;
+    background:#ff4d6d;
+    color:white;
+    transition:.3s;
+}
+
+button:hover{
+    transform:scale(1.08);
+}
+
+@media(max-width:600px){
+    h1{font-size:1.7rem}
+    p{font-size:1rem}
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene1" class="container">
+    <h1>Hey… ❤️</h1>
+    <p>Before I say something, tell me your name 😌</p>
+    <input type="text" id="herName" placeholder="Enter your name">
+    <br><br>
+    <button onclick="start()">Continue</button>
+</div>
+
+<div id="scene2" class="container" style="display:none;">
+    <h1 id="title"></h1>
+    <p id="message"></p>
+    <button onclick="next()">Continue</button>
+</div>
+
+<div id="finalScene" class="container" style="display:none;">
+    <h1>Happy Valentine’s Day ❤️</h1>
+    <p id="finalMessage"></p>
+</div>
+
+<script>
+
+let name="";
+let step=0;
+
+const messages=[
+"We may not be what we used to be…",
+"But that doesn’t erase the smiles we shared.",
+"Or the memories that still randomly pop into my head.",
+"(Yes… even the embarrassing ones 😅)",
+"I just wanted to say something simple today."
+];
+
+function start(){
+    name=document.getElementById("herName").value;
+    if(name===""){
+        alert("You have to enter your name first 😌");
+        return;
+    }
+
+    document.getElementById("scene1").style.display="none";
+    document.getElementById("scene2").style.display="block";
+
+    document.getElementById("title").innerText="Dear "+name+" ❤️";
+    document.getElementById("message").innerText=messages[step];
+}
+
+function next(){
+    step++;
+    if(step < messages.length){
+        document.getElementById("message").innerText=messages[step];
+    } else {
+        document.getElementById("scene2").style.display="none";
+        document.getElementById("finalScene").style.display="block";
+
+        document.getElementById("finalMessage").innerHTML=
+        name+", I truly hope life gives you love, peace, success, and someone who values you deeply.<br><br>"+
+        "No pressure. No expectations.<br>"+
+        "Just a genuine wish from someone who once cared — and still respects you. 🌹";
+    }
+}
+
+/* Floating hearts generator */
+setInterval(()=>{
+    const heart=document.createElement("div");
+    heart.innerHTML="❤️";
+    heart.className="heart";
+    heart.style.left=Math.random()*100+"vw";
+    heart.style.animationDuration=(6+Math.random()*5)+"s";
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),10000);
+},900);
+
+</script>
+
+</body>
+</html>
