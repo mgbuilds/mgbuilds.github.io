@@ -1,172 +1,223 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Happy Valentine’s Day ❤️</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>Love Journey 💖</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
 
 body{
-    font-family:'Poppins',sans-serif;
-    background:black;
+    background:#000;
     color:white;
     overflow:hidden;
-}
-
-/* Floating hearts background */
-.heart{
-    position:fixed;
-    font-size:18px;
-    opacity:0.4;
-    animation:float 8s linear infinite;
-}
-
-@keyframes float{
-    0%{transform:translateY(100vh);opacity:0}
-    20%{opacity:.5}
-    100%{transform:translateY(-10vh);opacity:0}
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
 .container{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    text-align:center;
     width:90%;
-    max-width:700px;
-    animation:fadeIn 1s ease;
+    max-width:500px;
+    text-align:center;
 }
 
-@keyframes fadeIn{
-    from{opacity:0;transform:translate(-50%,-45%)}
-    to{opacity:1;transform:translate(-50%,-50%)}
-}
-
-h1{
-    font-size:2.2rem;
-    margin-bottom:20px;
-    background:linear-gradient(45deg,#ff4d6d,#ff758f,#ffb3c6);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-
-p{
-    font-size:1.2rem;
-    margin-bottom:25px;
-    line-height:1.6;
-}
+.hidden{display:none;}
 
 input{
+    width:100%;
     padding:12px;
-    width:80%;
-    max-width:300px;
+    border-radius:30px;
     border:none;
-    border-radius:25px;
+    margin-top:15px;
     text-align:center;
-    font-size:1rem;
 }
 
 button{
-    padding:12px 30px;
+    margin-top:20px;
+    padding:12px 25px;
     border:none;
     border-radius:30px;
-    font-size:1rem;
-    cursor:pointer;
-    background:#ff4d6d;
+    background:linear-gradient(45deg,#ff007f,#ff4da6);
     color:white;
-    transition:.3s;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
 }
 
-button:hover{
-    transform:scale(1.08);
+button:hover{transform:scale(1.05);}
+
+#gameArea{
+    position:relative;
+    width:100%;
+    height:60vh;
+    overflow:hidden;
 }
 
-@media(max-width:600px){
-    h1{font-size:1.7rem}
-    p{font-size:1rem}
+.heart{
+    position:absolute;
+    font-size:28px;
+    cursor:pointer;
+    animation:floatUp linear forwards;
+}
+
+@keyframes floatUp{
+    from{transform:translateY(0);}
+    to{transform:translateY(-120vh);}
+}
+
+.counter{
+    margin-top:10px;
+    font-size:18px;
+}
+
+.contract{
+    background:#111;
+    padding:20px;
+    border-radius:15px;
+    border:1px solid #ff4da6;
 }
 </style>
 </head>
 
 <body>
 
-<div id="scene1" class="container">
-    <h1>Hey… ❤️</h1>
-    <p>Before I say something, tell me your name 😌</p>
-    <input type="text" id="herName" placeholder="Enter your name">
-    <br><br>
-    <button onclick="start()">Continue</button>
+<div class="container" id="screen1">
+    <h2>Welcome Beautiful ❤️</h2>
+    <p>Enter your name to begin our Love Journey</p>
+    <input type="text" id="herName" placeholder="Your Name">
+    <button onclick="startGame()">Start Journey</button>
 </div>
 
-<div id="scene2" class="container" style="display:none;">
-    <h1 id="title"></h1>
-    <p id="message"></p>
-    <button onclick="next()">Continue</button>
+<div class="container hidden" id="screen2">
+    <h2>Level 1: Collect the Love 💕</h2>
+    <p>Tap 10 hearts to unlock the next level</p>
+    <div id="gameArea"></div>
+    <div class="counter">Hearts Collected: <span id="score">0</span>/10</div>
 </div>
 
-<div id="finalScene" class="container" style="display:none;">
-    <h1>Happy Valentine’s Day ❤️</h1>
-    <p id="finalMessage"></p>
+<div class="container hidden" id="screen3">
+    <h2 id="storyTitle"></h2>
+    <p id="storyText"></p>
+    <button onclick="finalQuestion()">Continue 💖</button>
+</div>
+
+<div class="container hidden" id="screen4">
+    <h2>The Big Question 💍</h2>
+    <p id="question"></p>
+    <button id="yesBtn" onclick="showContract()">Yes 💖</button>
+    <button id="noBtn" onclick="handleNo()">No 🙈</button>
+</div>
+
+<div class="container hidden" id="screen5">
+    <div class="contract">
+        <h2>Official Love Contract ❤️</h2>
+        <p>This confirms that</p>
+        <h3 id="cName"></h3>
+        <p>has agreed to be</p>
+        <h3>Valentine & Forever Person</h3>
+        <p>of</p>
+        <h3>Ritesh</h3>
+        <p>From today & always 💍</p>
+    </div>
 </div>
 
 <script>
+let nameVal="";
+let score=0;
+let noCount=0;
 
-let name="";
-let step=0;
+function startGame(){
+    nameVal=document.getElementById("herName").value.trim();
+    if(nameVal===""){alert("Enter your name 😌");return;}
 
-const messages=[
-"We may not be what we used to be…",
-"But that doesn’t erase the smiles we shared.",
-"Or the memories that still randomly pop into my head.",
-"(Yes… even the embarrassing ones 😅)",
-"I just wanted to say something simple today."
-];
+    document.getElementById("screen1").classList.add("hidden");
+    document.getElementById("screen2").classList.remove("hidden");
 
-function start(){
-    name=document.getElementById("herName").value;
-    if(name===""){
-        alert("You have to enter your name first 😌");
-        return;
-    }
-
-    document.getElementById("scene1").style.display="none";
-    document.getElementById("scene2").style.display="block";
-
-    document.getElementById("title").innerText="Dear "+name+" ❤️";
-    document.getElementById("message").innerText=messages[step];
+    spawnHearts();
 }
 
-function next(){
-    step++;
-    if(step < messages.length){
-        document.getElementById("message").innerText=messages[step];
+function spawnHearts(){
+    const area=document.getElementById("gameArea");
+
+    const interval=setInterval(()=>{
+        const heart=document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerHTML="❤️";
+        heart.style.left=Math.random()*90+"%";
+        heart.style.bottom="0px";
+        heart.style.animationDuration=(3+Math.random()*2)+"s";
+
+        heart.onclick=function(){
+            score++;
+            document.getElementById("score").innerText=score;
+            heart.remove();
+
+            if(score>=10){
+                clearInterval(interval);
+                setTimeout(()=>nextLevel(),500);
+            }
+        };
+
+        area.appendChild(heart);
+
+        setTimeout(()=>heart.remove(),5000);
+    },700);
+}
+
+function nextLevel(){
+    document.getElementById("screen2").classList.add("hidden");
+    document.getElementById("screen3").classList.remove("hidden");
+
+    document.getElementById("storyTitle").innerText="Level 2: A Little Confession 💭";
+    document.getElementById("storyText").innerText=
+    nameVal+", every heart you tapped represents how much you matter to me. Being with you feels calm, exciting, safe and magical.";
+}
+
+function finalQuestion(){
+    document.getElementById("screen3").classList.add("hidden");
+    document.getElementById("screen4").classList.remove("hidden");
+
+    document.getElementById("question").innerText=
+    nameVal+", will you be my Valentine and forever person?";
+}
+
+function handleNo(){
+    noCount++;
+    const noBtn=document.getElementById("noBtn");
+    const yesBtn=document.getElementById("yesBtn");
+
+    const texts=[
+        "Are you sure? 😏",
+        "Think again 😌",
+        "System error ❌",
+        "That seems illegal 🚨",
+        "Okay fine YES 💖"
+    ];
+
+    if(noCount < texts.length){
+        noBtn.innerText=texts[noCount];
+        noBtn.style.transform="scale("+(1-noCount*0.1)+")";
+        yesBtn.style.transform="scale("+(1+noCount*0.1)+")";
     } else {
-        document.getElementById("scene2").style.display="none";
-        document.getElementById("finalScene").style.display="block";
-
-        document.getElementById("finalMessage").innerHTML=
-        name+", I truly hope life gives you love, peace, success, and someone who values you deeply.<br><br>"+
-        "No pressure. No expectations.<br>"+
-        "Just a genuine wish from someone who once cared — and still respects you. 🌹";
+        showContract();
     }
 }
 
-/* Floating hearts generator */
-setInterval(()=>{
-    const heart=document.createElement("div");
-    heart.innerHTML="❤️";
-    heart.className="heart";
-    heart.style.left=Math.random()*100+"vw";
-    heart.style.animationDuration=(6+Math.random()*5)+"s";
-    document.body.appendChild(heart);
-    setTimeout(()=>heart.remove(),10000);
-},900);
-
+function showContract(){
+    document.getElementById("screen4").classList.add("hidden");
+    document.getElementById("screen5").classList.remove("hidden");
+    document.getElementById("cName").innerText=nameVal;
+}
 </script>
 
 </body>
